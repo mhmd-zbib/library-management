@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /data/postgres
     volumes:
-      - postgres_data:/data/postgres
+      - /docker/postgres/data:/data/postgres
     networks:
       - library-network
     healthcheck:
@@ -23,6 +23,3 @@ services:
 networks:
   library-network:
     driver: bridge
-
-volumes:
-  postgres_data:
