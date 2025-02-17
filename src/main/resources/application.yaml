@@ -1,0 +1,20 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  application:
+    name: library-management-system
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
