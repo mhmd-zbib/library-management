@@ -45,3 +45,6 @@ application-local.yaml
 # Logs
 logs/
 *.log
+
+# Docker
+/docker/postgres/data/
