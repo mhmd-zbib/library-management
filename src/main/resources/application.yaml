@@ -18,3 +18,7 @@ server:
     include-binding-errors: always
     include-stacktrace: never
     include-exception: false
+
+jwt:
+  secret: 2b3cb49cc5b8861281a08b53a1f7676942aad43c5cdf35b6b1c80aa608a54bae10f8e3a98d10744b6e9fa69bee3e1f5311fcff3c8706ef21ab631b852d42e277
+  expiration: 86400 # 24 hours

@@ -13,41 +13,20 @@ public class LoggingAspect {
     private static final Logger logger = LogManager.getLogger(LoggingAspect.class);
 
     @Around("@annotation(loggableOperation)")
-    public Object logOperation(ProceedingJoinPoint joinPoint, LoggableOperation loggableOperation) throws Throwable {
-        String methodName = joinPoint.getSignature().getName();
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        Object[] args = joinPoint.getArgs();
-
-        logger.info("Starting {} - {}: {}.{}() with arguments: {}",
-                loggableOperation.operationType(),
-                loggableOperation.description(),
-                className,
-                methodName,
-                args);
-
-        long startTime = System.currentTimeMillis();
+    public Object logExecutionTime(ProceedingJoinPoint joinPoint, LoggableOperation loggableOperation) throws Throwable {
+        final long start = System.currentTimeMillis();
+        final String methodName = joinPoint.getSignature().getName();
+        final String className = joinPoint.getTarget().getClass().getSimpleName();
+        
         try {
+            logger.info("Executing {} in class {}", methodName, className);
             Object result = joinPoint.proceed();
-            long executionTime = System.currentTimeMillis() - startTime;
-
-            logger.info("Completed {} in {} ms: {}.{}()",
-                    loggableOperation.operationType(),
-                    executionTime,
-                    className,
-                    methodName);
-
+            logger.info("Completed {} in {} ms. Operation type: {}",
+                methodName, System.currentTimeMillis() - start, loggableOperation.operationType());
             return result;
-        } catch (Exception ex) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            logger.error("Failed {} after {} ms: {}.{}() - Error: {}",
-                    loggableOperation.operationType(),
-                    executionTime,
-                    className,
-                    methodName,
-                    ex.getMessage(),
-                    ex);
-
-            throw ex;
+        } catch (Exception e) {
+            logger.error("Error in {} - {}: {}", className, methodName, e.getMessage());
+            throw e;
         }
     }
 } 
