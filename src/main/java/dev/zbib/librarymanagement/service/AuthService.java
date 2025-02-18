@@ -5,6 +5,8 @@ import dev.zbib.librarymanagement.dto.LoginRequest;
 import dev.zbib.librarymanagement.dto.RegisterRequest;
 import dev.zbib.librarymanagement.entity.Role;
 import dev.zbib.librarymanagement.entity.User;
+import dev.zbib.librarymanagement.logging.LogLevel;
+import dev.zbib.librarymanagement.logging.LoggableOperation;
 import dev.zbib.librarymanagement.repository.RoleRepository;
 import dev.zbib.librarymanagement.repository.UserRepository;
 import dev.zbib.librarymanagement.security.JwtUtil;
@@ -29,13 +31,20 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     @Transactional
+    @LoggableOperation(
+            operationType = "USER_REGISTRATION",
+            description = "Processing new user registration",
+            level = LogLevel.INFO,
+            includeParameters = true,
+            includeResult = false,
+            maskSensitiveData = true
+    )
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        Role userRole = roleRepository.findByName(String.valueOf(PATRON)
-                        .toLowerCase())
+        Role userRole = roleRepository.findByName(String.valueOf(PATRON))
                 .orElseThrow(() -> new IllegalStateException("Default role not found"));
         User user = User.builder()
                 .email(request.getEmail())
