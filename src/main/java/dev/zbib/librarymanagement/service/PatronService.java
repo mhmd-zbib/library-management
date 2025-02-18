@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 import static dev.zbib.librarymanagement.builder.PatronBuilder.buildPatron;
+import static dev.zbib.librarymanagement.builder.PatronBuilder.buildPatronResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -30,14 +31,16 @@ public class PatronService {
         return patron.getId();
     }
 
-    @Transactional(readOnly = true)
-    public PatronResponse getPatronById(UUID id) {
+    public PatronResponse getPatronRequestById(UUID id) {
+        Patron patron = getPatronById(id);
+        return buildPatronResponse(patron);
+    }
+
+    public Patron getPatronById(UUID id) {
         return patronRepository.findById(id)
-                .map(PatronBuilder::buildPatronResponse)
                 .orElseThrow(PatronException.PatronNotFound::new);
     }
 
-    @Transactional(readOnly = true)
     public Page<PatronResponse> getPatrons(Pageable pageable) {
         return patronRepository.findAll(pageable)
                 .map(PatronBuilder::buildPatronResponse);

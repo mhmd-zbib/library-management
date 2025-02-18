@@ -28,7 +28,7 @@ public class PatronController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PatronResponse> getPatronById(@PathVariable UUID id) {
-        return ResponseEntity.ok(patronService.getPatronById(id));
+        return ResponseEntity.ok(patronService.getPatronRequestById(id));
     }
 
     @GetMapping

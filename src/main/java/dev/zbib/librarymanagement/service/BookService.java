@@ -29,10 +29,14 @@ public class BookService {
                 .getId();
     }
 
-    public BookResponse getBookById(UUID id) {
-        Book book = bookRepository.findById(id)
-                .orElseThrow(BookException.BookNotFound::new);
+    public BookResponse getBookRequestById(UUID id) {
+        Book book = getBookById(id);
         return buildBookResponse(book);
+    }
+
+    public Book getBookById(UUID id) {
+        return bookRepository.findById(id)
+                .orElseThrow(BookException.BookNotFound::new);
     }
 
     public Page<BookResponse> getBooks(Pageable pageable) {

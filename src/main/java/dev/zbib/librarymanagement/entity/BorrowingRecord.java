@@ -32,8 +32,6 @@ public class BorrowingRecord {
     @Column(name = "borrow_date", nullable = false)
     private LocalDateTime borrowDate;
 
-    @Column(name = "due_date", nullable = false)
-    private LocalDateTime dueDate;
 
     @Column(name = "return_date")
     private LocalDateTime returnDate;
@@ -41,9 +39,6 @@ public class BorrowingRecord {
     @Column(name = "status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private BorrowingStatus status;
-
-    @Column(name = "fine_amount")
-    private Double fineAmount;
 
     @Column(name = "notes", length = 500)
     private String notes;
