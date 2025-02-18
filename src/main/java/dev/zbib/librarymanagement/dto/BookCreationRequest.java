@@ -1,18 +1,12 @@
 package dev.zbib.librarymanagement.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.Year;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class BookRequest {
+public class BookCreationRequest {
     @NotBlank(message = "Book title cannot be blank")
     @Size(min = 1, max = 255, message = "Title must be between 1 and 255 characters")
     private String title;

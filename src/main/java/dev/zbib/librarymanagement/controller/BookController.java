@@ -1,6 +1,6 @@
 package dev.zbib.librarymanagement.controller;
 
-import dev.zbib.librarymanagement.dto.BookRequest;
+import dev.zbib.librarymanagement.dto.BookCreationRequest;
 import dev.zbib.librarymanagement.dto.BookResponse;
 import dev.zbib.librarymanagement.service.BookService;
 import jakarta.validation.Valid;
@@ -20,7 +20,7 @@ public class BookController {
     private final BookService bookService;
 
     @PostMapping
-    public ResponseEntity<UUID> createBook(@Valid @RequestBody BookRequest request) {
+    public ResponseEntity<UUID> createBook(@Valid @RequestBody BookCreationRequest request) {
         UUID id = bookService.createBook(request);
         return ResponseEntity.ok(id);
     }
@@ -36,7 +36,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UUID> updateBook(@PathVariable UUID id, @Valid @RequestBody BookRequest request) {
+    public ResponseEntity<UUID> updateBook(@PathVariable UUID id, @Valid @RequestBody BookCreationRequest request) {
         UUID bookId = bookService.updateBook(id,
                 request);
         return ResponseEntity.ok(bookId);

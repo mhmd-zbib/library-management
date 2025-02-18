@@ -1,6 +1,6 @@
 package dev.zbib.librarymanagement.builder;
 
-import dev.zbib.librarymanagement.dto.PatronRequest;
+import dev.zbib.librarymanagement.dto.PatronCreationRequest;
 import dev.zbib.librarymanagement.dto.PatronResponse;
 import dev.zbib.librarymanagement.entity.Patron;
 import org.springframework.stereotype.Component;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PatronBuilder {
 
-    public static Patron buildPatron(PatronRequest request) {
+    public static Patron buildPatron(PatronCreationRequest request) {
         return Patron.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())

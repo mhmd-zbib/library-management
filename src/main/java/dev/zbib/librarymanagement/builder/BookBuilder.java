@@ -1,7 +1,7 @@
 package dev.zbib.librarymanagement.builder;
 
 
-import dev.zbib.librarymanagement.dto.BookRequest;
+import dev.zbib.librarymanagement.dto.BookCreationRequest;
 import dev.zbib.librarymanagement.dto.BookResponse;
 import dev.zbib.librarymanagement.entity.Book;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookBuilder {
 
-    public static Book buildBook(BookRequest request) {
+    public static Book buildBook(BookCreationRequest request) {
         return Book.builder()
                 .title(request.getTitle())
                 .author(request.getAuthor())

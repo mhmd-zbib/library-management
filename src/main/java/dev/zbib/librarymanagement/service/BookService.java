@@ -1,8 +1,9 @@
 package dev.zbib.librarymanagement.service;
 
 import dev.zbib.librarymanagement.builder.BookBuilder;
-import dev.zbib.librarymanagement.dto.BookRequest;
+import dev.zbib.librarymanagement.dto.BookCreationRequest;
 import dev.zbib.librarymanagement.dto.BookResponse;
+import dev.zbib.librarymanagement.dto.BookUpdateRequest;
 import dev.zbib.librarymanagement.entity.Book;
 import dev.zbib.librarymanagement.exception.BookException;
 import dev.zbib.librarymanagement.repository.BookRepository;
@@ -22,7 +23,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
 
-    public UUID createBook(BookRequest request) {
+    public UUID createBook(BookCreationRequest request) {
         Book book = buildBook(request);
         return bookRepository.save(book)
                 .getId();
@@ -39,10 +40,20 @@ public class BookService {
         return books.map(BookBuilder::buildBookResponse);
     }
 
-    public UUID updateBook(UUID id, BookRequest request) {
+    public UUID updateBook(UUID id, BookUpdateRequest request) {
         Book existingBook = findBookById(id);
-        updateBookFields(existingBook,
-                request);
+        if (request.getTitle() != null) {
+            existingBook.setTitle(request.getTitle());
+        }
+        if (request.getAuthor() != null) {
+            existingBook.setAuthor(request.getAuthor());
+        }
+        if (request.getPublicationYear() > 0) {
+            existingBook.setPublicationYear(request.getPublicationYear());
+        }
+        if (request.getIsbn() != null) {
+            existingBook.setISBN(request.getIsbn());
+        }
         return bookRepository.save(existingBook)
                 .getId();
     }
@@ -54,12 +65,5 @@ public class BookService {
     private Book findBookById(UUID id) {
         return bookRepository.findById(id)
                 .orElseThrow(BookException.BookNotFound::new);
-    }
-
-    private void updateBookFields(Book book, BookRequest request) {
-        book.setTitle(request.getTitle());
-        book.setAuthor(request.getAuthor());
-        book.setPublicationYear(request.getPublicationYear());
-        book.setISBN(request.getIsbn());
     }
 }
