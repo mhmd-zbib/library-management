@@ -1,6 +1,6 @@
 package dev.zbib.librarymanagement.dto;
 
-public enum Role {
+public enum Roles {
     PATRON,
     LIBRARIAN
 }

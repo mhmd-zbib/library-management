@@ -19,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static dev.zbib.librarymanagement.dto.Role.PATRON;
+import static dev.zbib.librarymanagement.dto.Roles.PATRON;
 
 @Service
 @RequiredArgsConstructor

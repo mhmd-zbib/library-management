@@ -1,9 +1,10 @@
 package dev.zbib.librarymanagement.config;
 
+import dev.zbib.librarymanagement.dto.Roles;
 import dev.zbib.librarymanagement.entity.Role;
 import dev.zbib.librarymanagement.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-@Slf4j
+@Log4j2
 public class RoleInitializer {
 
     private final RoleRepository roleRepository;
@@ -26,8 +27,8 @@ public class RoleInitializer {
         return args -> {
             log.info("Initializing roles...");
 
-            List<String> roleNames = Arrays.asList(dev.zbib.librarymanagement.dto.Role.PATRON.name(),
-                    dev.zbib.librarymanagement.dto.Role.LIBRARIAN.name());
+            List<String> roleNames = Arrays.asList(Roles.PATRON.name(),
+                    Roles.LIBRARIAN.name());
 
             for (String roleName : roleNames) {
                 if (roleRepository.findByName(roleName)
