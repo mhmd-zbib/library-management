@@ -1,198 +1,153 @@
 package dev.zbib.librarymanagement.logging;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 @Aspect
 @Component
 public class LoggingAspect {
-    private static final Logger logger = LogManager.getLogger(LoggingAspect.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Set<String> SENSITIVE_FIELDS = Set.of("password",
-            "token",
-            "secret");
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Around("@annotation(loggableOperation)")
     public Object logOperation(ProceedingJoinPoint joinPoint, LoggableOperation loggableOperation) throws Throwable {
-        final long startTime = System.currentTimeMillis();
-        final String methodName = joinPoint.getSignature()
-                .getName();
-        final String className = joinPoint.getTarget()
-                .getClass()
-                .getSimpleName();
-        final String operationType = loggableOperation.operationType();
-        final LogLevel logLevel = loggableOperation.level();
+        String correlationId = UUID.randomUUID().toString();
+        long startTime = System.nanoTime();
 
-        Map<String, Object> logData = new LinkedHashMap<>();
-        logData.put("timestamp",
-                LocalDateTime.now()
-                        .format(DateTimeFormatter.ISO_DATE_TIME));
-        logData.put("class",
-                className);
-        logData.put("method",
-                methodName);
-        logData.put("operationType",
-                operationType);
-        logData.put("description",
-                loggableOperation.description());
+        try (MDC.MDCCloseable mdc = MDC.putCloseable("correlationId", correlationId)) {
+            return executeWithLogging(joinPoint, loggableOperation, startTime, correlationId);
+        }
+    }
 
-        addRequestInformation(logData);
-        addUserInformation(logData);
+    private Object executeWithLogging(
+            ProceedingJoinPoint joinPoint,
+            LoggableOperation loggableOperation,
+            long startTime,
+            String correlationId) throws Throwable {
+
+        // Create base event builder
+        LogEvent.LogEventBuilder eventBuilder = LogEvent.builder()
+                .timestamp()
+                .correlationId(correlationId)
+                .service(joinPoint.getTarget().getClass().getSimpleName())
+                .method(joinPoint.getSignature().getName())
+                .operationType(loggableOperation.operationType())
+                .description(loggableOperation.description())
+                .request(getRequestInformation())
+                .user(getUserInformation());
+
         if (loggableOperation.includeParameters()) {
-            addMethodParameters(joinPoint,
-                    logData,
-                    loggableOperation.maskSensitiveData());
+            eventBuilder.parameters(getMethodParameters(joinPoint, loggableOperation.maskSensitiveData()));
         }
 
+        // Log start
+        log.info("Operation started - {}", formatLogEvent(eventBuilder.build()));
+
         try {
-
-            log(logLevel,
-                    "Starting operation: {}",
-                    logData);
-
+            // Execute method
             Object result = joinPoint.proceed();
 
-            long executionTime = System.currentTimeMillis() - startTime;
-            logData.put("executionTime",
-                    executionTime + "ms");
-            logData.put("status",
-                    "SUCCESS");
+            // Log success
+            LogEvent successEvent = eventBuilder
+                    .status("SUCCESS")
+                    .executionTime(formatExecutionTime(startTime))
+                    .result(loggableOperation.includeResult() ? LogMaskingUtil.maskSensitiveData(result) : null)
+                    .build();
 
-            if (loggableOperation.includeResult() && result != null) {
-                logData.put("result",
-                        maskSensitiveData(objectMapper.writeValueAsString(result)));
-            }
-            log(logLevel,
-                    "Completed operation: {}",
-                    logData);
+            log.info("Operation completed - {}", formatLogEvent(successEvent));
 
             return result;
-
         } catch (Exception e) {
+            // Log failure
+            LogEvent errorEvent = eventBuilder
+                    .status("ERROR")
+                    .errorType(e.getClass().getSimpleName())
+                    .errorMessage(e.getMessage())
+                    .executionTime(formatExecutionTime(startTime))
+                    .build();
 
-            logData.put("status",
-                    "ERROR");
-            logData.put("errorType",
-                    e.getClass()
-                            .getSimpleName());
-            logData.put("errorMessage",
-                    e.getMessage());
-            logData.put("executionTime",
-                    (System.currentTimeMillis() - startTime) + "ms");
-
-
-            logger.error("Operation failed: {}",
-                    logData,
-                    e);
+            log.error("Operation failed - {}", formatLogEvent(errorEvent), e);
             throw e;
         }
     }
 
-    private void addRequestInformation(Map<String, Object> logData) {
+    private Map<String, String> getRequestInformation() {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
-                logData.put("requestMethod",
-                        request.getMethod());
-                logData.put("requestURI",
-                        request.getRequestURI());
-                logData.put("clientIP",
-                        request.getRemoteAddr());
+                return Map.of(
+                        "method", request.getMethod(),
+                        "uri", request.getRequestURI(),
+                        "clientIp", getClientIp(request),
+                        "userAgent", Optional.ofNullable(request.getHeader("User-Agent")).orElse("Unknown")
+                );
             }
         } catch (Exception e) {
-            logger.debug("Could not add request information to log",
-                    e);
+            log.debug("Failed to get request information", e);
         }
+        return Collections.emptyMap();
     }
 
-    private void addUserInformation(Map<String, Object> logData) {
-        Authentication authentication = SecurityContextHolder.getContext()
-                .getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            logData.put("username",
-                    authentication.getName());
-        }
+    private String getClientIp(HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                .or(() -> Optional.ofNullable(request.getHeader("X-Real-IP")))
+                .orElse(request.getRemoteAddr());
     }
 
-    private void addMethodParameters(ProceedingJoinPoint joinPoint, Map<String, Object> logData, boolean maskSensitive) {
+    private Map<String, String> getUserInformation() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .filter(Authentication::isAuthenticated)
+                .map(auth -> Map.of(
+                        "username", auth.getName(),
+                        "roles", auth.getAuthorities().toString()
+                ))
+                .orElse(Collections.emptyMap());
+    }
+
+    private Map<String, Object> getMethodParameters(ProceedingJoinPoint joinPoint, boolean maskSensitive) {
         try {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-            String[] parameterNames = signature.getParameterNames();
-            Object[] parameterValues = joinPoint.getArgs();
+            String[] paramNames = signature.getParameterNames();
+            Object[] paramValues = joinPoint.getArgs();
 
             Map<String, Object> parameters = new HashMap<>();
-            for (int i = 0; i < parameterNames.length; i++) {
-                String paramName = parameterNames[i];
-                Object paramValue = parameterValues[i];
-
-                if (paramValue != null) {
-                    if (maskSensitive) {
-                        parameters.put(paramName,
-                                maskSensitiveData(paramValue));
-                    } else {
-                        parameters.put(paramName,
-                                paramValue);
-                    }
+            for (int i = 0; i < paramNames.length; i++) {
+                if (paramValues[i] != null) {
+                    parameters.put(paramNames[i],
+                            maskSensitive ? LogMaskingUtil.maskSensitiveData(paramValues[i]) : paramValues[i]);
                 }
             }
-
-            if (!parameters.isEmpty()) {
-                logData.put("parameters",
-                        parameters);
-            }
+            return parameters;
         } catch (Exception e) {
-            logger.debug("Could not add method parameters to log",
-                    e);
+            log.debug("Failed to process method parameters", e);
+            return Collections.emptyMap();
         }
     }
 
-    private Object maskSensitiveData(Object value) {
-        if (value == null) {
-            return null;
-        }
-
+    private String formatLogEvent(LogEvent event) {
         try {
-            String stringValue = value.toString();
-            if (SENSITIVE_FIELDS.stream()
-                    .anyMatch(field -> stringValue.toLowerCase()
-                            .contains(field.toLowerCase()))) {
-                return "********";
-            }
-            return value;
+            return OBJECT_MAPPER.writeValueAsString(event);
         } catch (Exception e) {
-            return value;
+            log.warn("Failed to format log event", e);
+            return event.toString();
         }
     }
 
-    private void log(LogLevel level, String message, Object... args) {
-        switch (level) {
-            case TRACE -> logger.trace(message,
-                    args);
-            case DEBUG -> logger.debug(message,
-                    args);
-            case INFO -> logger.info(message,
-                    args);
-            case WARN -> logger.warn(message,
-                    args);
-            case ERROR -> logger.error(message,
-                    args);
-        }
+    private String formatExecutionTime(long startTimeNanos) {
+        return String.format("%.2fms", (System.nanoTime() - startTimeNanos) / 1_000_000.0);
     }
 }
