@@ -25,6 +25,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
+        return createErrorResponse(ex.getStatus(),
+                ex.getMessage(),
+                request.getRequestURI());
+    }
+
     @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, HttpServletRequest request) {

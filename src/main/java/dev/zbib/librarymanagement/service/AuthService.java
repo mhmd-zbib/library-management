@@ -5,6 +5,7 @@ import dev.zbib.librarymanagement.dto.LoginRequest;
 import dev.zbib.librarymanagement.dto.RegisterRequest;
 import dev.zbib.librarymanagement.entity.Role;
 import dev.zbib.librarymanagement.entity.User;
+import dev.zbib.librarymanagement.exception.AuthException;
 import dev.zbib.librarymanagement.logging.LogLevel;
 import dev.zbib.librarymanagement.logging.LoggableOperation;
 import dev.zbib.librarymanagement.repository.RoleRepository;
@@ -41,7 +42,7 @@ public class AuthService {
     )
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new AuthException.EmailAlreadyExists();
         }
 
         Role userRole = roleRepository.findByName(String.valueOf(PATRON))
