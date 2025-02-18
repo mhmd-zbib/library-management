@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Year;
 
 @Data
 @Builder
@@ -22,12 +22,11 @@ public class BookRequest {
     private String author;
 
     @NotNull(message = "Publication year cannot be null")
-    @PastOrPresent(message = "Publication date cannot be in the future")
-    private LocalDateTime publicationYear;
+    private int publicationYear;
 
     @NotBlank(message = "ISBN cannot be blank")
     @Pattern(regexp = "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$",
             message = "Invalid ISBN format")
     @Size(max = 20, message = "ISBN must not exceed 20 characters")
-    private String ISBN;
+    private String isbn;
 }

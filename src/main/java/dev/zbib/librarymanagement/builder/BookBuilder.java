@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookBuilder {
 
-    public static Book buildBookRequest(BookRequest request) {
+    public static Book buildBook(BookRequest request) {
         return Book.builder()
                 .title(request.getTitle())
                 .author(request.getAuthor())
                 .publicationYear(request.getPublicationYear())
-                .ISBN(request.getISBN())
+                .ISBN(request.getIsbn())
                 .build();
     }
 
@@ -24,7 +24,7 @@ public class BookBuilder {
                 .title(book.getTitle())
                 .author(book.getAuthor())
                 .publicationYear(book.getPublicationYear())
-                .ISBN(book.getISBN())
+                .isbn(book.getISBN())
                 .build();
     }
 }

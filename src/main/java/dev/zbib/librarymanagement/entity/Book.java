@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.UUID;
 
 @Entity
@@ -29,7 +30,7 @@ public class Book {
     private String author;
 
     @Column(name = "publication_year", nullable = false)
-    private LocalDateTime publicationYear;
+    private int publicationYear;
 
     @Column(name = "isbn", nullable = false, unique = true, length = 20)
     private String ISBN;

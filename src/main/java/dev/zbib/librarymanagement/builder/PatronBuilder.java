@@ -15,7 +15,6 @@ public class PatronBuilder {
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
-                .membershipStatus(request.getMembershipStatus())
                 .membershipExpiryDate(request.getMembershipExpiryDate())
                 .build();
     }
@@ -28,7 +27,6 @@ public class PatronBuilder {
                 .email(patron.getEmail())
                 .phoneNumber(patron.getPhoneNumber())
                 .address(patron.getAddress())
-                .membershipStatus(patron.getMembershipStatus())
                 .membershipExpiryDate(patron.getMembershipExpiryDate())
                 .build();
     }

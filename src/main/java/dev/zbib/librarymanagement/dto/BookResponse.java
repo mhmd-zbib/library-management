@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.UUID;
 
 @Data
@@ -18,8 +18,6 @@ public class BookResponse {
     private UUID id;
     private String title;
     private String author;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime publicationYear;
-    private String ISBN;
+    private int publicationYear;
+    private String isbn;
 }
