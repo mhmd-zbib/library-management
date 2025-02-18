@@ -71,7 +71,6 @@ public class GlobalExceptionHandler {
                 .message("Validation failed")
                 .path(request.getRequestURI())
                 .errors(validationErrors)
-                .validationErrors(errors)
                 .build();
 
         return ResponseEntity.badRequest()

@@ -18,7 +18,6 @@ public class ErrorResponse {
     private final String message;
     private final String path;
     private final List<ValidationError> errors;
-    private final Map<String, String> validationErrors;
 
     @Builder.Default
     private final String traceId = java.util.UUID.randomUUID()
