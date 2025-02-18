@@ -37,10 +37,6 @@ public class Patron {
     @Column(name = "address", length = 255)
     private String address;
 
-    @Column(name = "membership_status", nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
-    private MembershipStatus membershipStatus;
-
     @Column(name = "membership_expiry_date")
     private LocalDateTime membershipExpiryDate;
 

@@ -1,6 +1,5 @@
 package dev.zbib.librarymanagement.dto;
 
-import dev.zbib.librarymanagement.entity.MembershipStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatronRequest{
+public class PatronRequest {
 
     @NotBlank(message = "First name cannot be blank")
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
@@ -36,9 +35,6 @@ public class PatronRequest{
 
     @Size(max = 255, message = "Address must not exceed 255 characters")
     private String address;
-
-    @NotNull(message = "Membership status cannot be null")
-    private MembershipStatus membershipStatus;
 
     @Future(message = "Membership expiry date must be in the future")
     private LocalDateTime membershipExpiryDate;
