@@ -6,11 +6,21 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+  packages-to-scan: dev.zbib.librarymanagement
+
 
 server:
   error:
@@ -18,3 +28,9 @@ server:
     include-binding-errors: always
     include-stacktrace: never
     include-exception: false
+  servlet:
+    context-path: /api
+
+jwt:
+  secret: 2b3cb49cc5b8861281a08b53a1f7676942aad43c5cdf35b6b1c80aa608a54bae10f8e3a98d10744b6e9fa69bee3e1f5311fcff3c8706ef21ab631b852d42e277
+  expiration: 86400 # 24 hours

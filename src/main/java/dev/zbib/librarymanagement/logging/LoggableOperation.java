@@ -5,9 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LoggableOperation {
-    String operationType();
+    String operationType() default "GENERAL";
+
     String description() default "";
-} 
+
+    LogLevel level() default LogLevel.INFO;
+
+    boolean includeParameters() default true;
+
+    boolean includeResult() default false;
+
+    boolean maskSensitiveData() default true;
+}
