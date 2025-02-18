@@ -37,8 +37,6 @@ public class LoggingAspect {
             LoggableOperation loggableOperation,
             long startTime,
             String correlationId) throws Throwable {
-
-        // Create base event builder
         LogEvent.LogEventBuilder eventBuilder = LogEvent.builder()
                 .timestamp()
                 .correlationId(correlationId)
@@ -53,14 +51,10 @@ public class LoggingAspect {
             eventBuilder.parameters(getMethodParameters(joinPoint, loggableOperation.maskSensitiveData()));
         }
 
-        // Log start
         log.info("Operation started - {}", formatLogEvent(eventBuilder.build()));
 
         try {
-            // Execute method
             Object result = joinPoint.proceed();
-
-            // Log success
             LogEvent successEvent = eventBuilder
                     .status("SUCCESS")
                     .executionTime(formatExecutionTime(startTime))
@@ -71,7 +65,6 @@ public class LoggingAspect {
 
             return result;
         } catch (Exception e) {
-            // Log failure
             LogEvent errorEvent = eventBuilder
                     .status("ERROR")
                     .errorType(e.getClass().getSimpleName())

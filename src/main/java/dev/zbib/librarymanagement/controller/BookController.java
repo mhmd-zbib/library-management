@@ -3,6 +3,9 @@ package dev.zbib.librarymanagement.controller;
 import dev.zbib.librarymanagement.dto.BookCreationRequest;
 import dev.zbib.librarymanagement.dto.BookResponse;
 import dev.zbib.librarymanagement.dto.BookUpdateRequest;
+import dev.zbib.librarymanagement.dto.BookFilterRequest;
+import dev.zbib.librarymanagement.logging.LogLevel;
+import dev.zbib.librarymanagement.logging.LoggableOperation;
 import dev.zbib.librarymanagement.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,11 @@ public class BookController {
 
     private final BookService bookService;
 
+    @LoggableOperation(
+            operationType = "BOOK_CREATE",
+            description = "Create new book",
+            includeResult = true
+    )
     @PostMapping
     public ResponseEntity<UUID> createBook(@Valid @RequestBody BookCreationRequest request) {
         UUID id = bookService.createBook(request);
@@ -32,10 +40,16 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<BookResponse>> getBooks(Pageable pageable) {
-        return ResponseEntity.ok(bookService.getBooks(pageable));
+    public ResponseEntity<Page<BookResponse>> getBooks(@Valid @ModelAttribute BookFilterRequest filterRequest, Pageable pageable) {
+        return ResponseEntity.ok(bookService.getBooks(filterRequest,
+                pageable));
     }
 
+    @LoggableOperation(
+            operationType = "BOOK_UPDATE",
+            description = "Update existing book",
+            includeResult = true
+    )
     @PutMapping("/{id}")
     public ResponseEntity<UUID> updateBook(@PathVariable UUID id, @Valid @RequestBody BookUpdateRequest request) {
         UUID bookId = bookService.updateBook(id,
@@ -43,6 +57,11 @@ public class BookController {
         return ResponseEntity.ok(bookId);
     }
 
+    @LoggableOperation(
+            operationType = "BOOK_DELETE",
+            description = "Delete book by ID",
+            level = LogLevel.WARN
+    )
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBookById(@PathVariable UUID id) {
         bookService.deleteBook(id);

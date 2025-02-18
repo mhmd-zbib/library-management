@@ -3,12 +3,10 @@ package dev.zbib.librarymanagement.service;
 import dev.zbib.librarymanagement.dto.AuthResponse;
 import dev.zbib.librarymanagement.dto.LoginRequest;
 import dev.zbib.librarymanagement.dto.RegisterRequest;
-import dev.zbib.librarymanagement.entity.Role;
 import dev.zbib.librarymanagement.entity.User;
 import dev.zbib.librarymanagement.exception.AuthException;
 import dev.zbib.librarymanagement.logging.LogLevel;
 import dev.zbib.librarymanagement.logging.LoggableOperation;
-import dev.zbib.librarymanagement.repository.RoleRepository;
 import dev.zbib.librarymanagement.repository.UserRepository;
 import dev.zbib.librarymanagement.security.JwtUtil;
 import dev.zbib.librarymanagement.security.SecurityUser;
@@ -26,7 +24,6 @@ import static dev.zbib.librarymanagement.dto.Roles.PATRON;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -44,13 +41,9 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AuthException.EmailAlreadyExists();
         }
-
-        Role userRole = roleRepository.findByName(String.valueOf(PATRON))
-                .orElseThrow(() -> new IllegalStateException("Default role not found"));
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(userRole)
                 .build();
 
         userRepository.save(user);
@@ -61,8 +54,6 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(token)
                 .email(user.getEmail())
-                .role(user.getRole()
-                        .getName())
                 .build();
     }
 
@@ -76,9 +67,6 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(token)
                 .email(securityUser.getUsername())
-                .role(securityUser.getUser()
-                        .getRole()
-                        .getName())
                 .build();
     }
 }

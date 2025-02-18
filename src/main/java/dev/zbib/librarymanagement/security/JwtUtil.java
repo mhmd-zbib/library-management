@@ -1,6 +1,5 @@
 package dev.zbib.librarymanagement.security;
 
-import dev.zbib.librarymanagement.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,7 +7,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-@Service
+@Component
 public class JwtUtil {
 
     @Value("${jwt.secret}")
@@ -26,16 +25,7 @@ public class JwtUtil {
     private long expiration;
 
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        if (userDetails instanceof SecurityUser) {
-            SecurityUser securityUser = (SecurityUser) userDetails;
-            claims.put("role",
-                    securityUser.getUser()
-                            .getRole()
-                            .getName());
-        }
-        return generateToken(claims,
-                userDetails);
+        return generateToken(new HashMap<>(), userDetails);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
@@ -44,8 +34,7 @@ public class JwtUtil {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + (expiration * 1000)))
-                .signWith(getSignInKey(),
-                        SignatureAlgorithm.HS256)
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -59,19 +48,11 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token,
-                Claims::getSubject);
-    }
-
-    public String extractRole(String token) {
-        return extractClaim(token,
-                claims -> claims.get("role",
-                        String.class));
+        return extractClaim(token, Claims::getSubject);
     }
 
     private Date extractExpiration(String token) {
-        return extractClaim(token,
-                Claims::getExpiration);
+        return extractClaim(token, Claims::getExpiration);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

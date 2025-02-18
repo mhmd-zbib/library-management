@@ -9,7 +9,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "borrowing_records")
+@Table(name = "borrowing_records", indexes = {
+    @Index(name = "idx_borrowing_status", columnList = "status"),
+    @Index(name = "idx_borrowing_dates", columnList = "borrow_date, due_date, return_date"),
+    @Index(name = "idx_borrowing_overdue", columnList = "is_overdue"),
+    @Index(name = "idx_borrowing_book", columnList = "book_id"),
+    @Index(name = "idx_borrowing_patron", columnList = "patron_id")
+})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -42,5 +48,11 @@ public class BorrowingRecord {
 
     @Column(name = "notes", length = 500)
     private String notes;
+
+    @Column(name = "due_date", nullable = false)
+    private LocalDateTime dueDate;
+
+    @Column(name = "is_overdue")
+    private boolean isOverdue;
 
 }

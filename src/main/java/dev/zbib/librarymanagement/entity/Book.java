@@ -10,10 +10,13 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.UUID;
 
+@Data
 @Entity
-@Table(name = "books")
-@Getter
-@Setter
+@Table(name = "books", indexes = {
+        @Index(name = "idx_book_publication_year", columnList = "publicationYear"),
+        @Index(name = "idx_book_isbn", columnList = "isbn", unique = true),
+        @Index(name = "idx_book_title", columnList = "title"),
+        @Index(name = "idx_book_author", columnList = "author")})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

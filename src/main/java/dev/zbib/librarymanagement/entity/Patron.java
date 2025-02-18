@@ -10,7 +10,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "patrons")
+@Table(name = "patrons", indexes = {
+    @Index(name = "idx_patron_email", columnList = "email", unique = true),
+    @Index(name = "idx_patron_name", columnList = "first_name, last_name"),
+    @Index(name = "idx_patron_membership", columnList = "membership_expiry_date")
+})
 @Getter
 @Setter
 @AllArgsConstructor
