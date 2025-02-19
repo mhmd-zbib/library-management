@@ -83,11 +83,10 @@ The system comes pre-loaded with:
 
 ### Requirements
 - Java 21
-- Maven 3.9+
-- Docker and Docker Compose (optional)
-- PostgreSQL 16 (if running locally)
+- Docker and Docker Compose
+- PostgreSQL 16
 
-### Local Development Setup
+### Quick Start
 
 1. Clone the repository:
 ```bash
@@ -95,50 +94,22 @@ git clone https://github.com/mhmd-zbib/library-management
 cd library-management
 ```
 
-2. Create local configuration:
-   - Copy `.env.example` to `.env`
-   - Set up your local environment variables:
+2. Create `.env` file in project root:
 ```properties
 POSTGRES_DB=library_db
 POSTGRES_USER=library_user
 POSTGRES_PASSWORD=library_password
 POSTGRES_PORT=5544
-SERVER_PORT=9000
-SPRING_PROFILES_ACTIVE=local
 ```
 
-3. Set up local PostgreSQL:
-   - Install PostgreSQL 16
-   - Create database and user:
-```sql
-CREATE DATABASE library_db;
-CREATE USER library_user WITH PASSWORD 'library_password';
-GRANT ALL PRIVILEGES ON DATABASE library_db TO library_user;
-```
-
-4. Build and run locally:
+3. Start with Docker:
 ```bash
-# Build the project
-mvn clean install
-
-# Run the application
-mvn spring-boot:run
-```
-
-### Docker Setup
-
-1. Using Docker Compose:
-```bash
-# Start services
 docker-compose up -d
 
-# View logs
 docker-compose logs -f
 
-# Stop services
 docker-compose down
 
-# Clean up volumes
 docker-compose down -v
 ```
 
