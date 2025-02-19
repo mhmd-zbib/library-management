@@ -1,8 +1,0 @@
-spring:
-  cache:
-    type: caffeine
-    cache-names: 
-      - book-details
-      - books-list
-    caffeine:
-      spec: maximumSize=500,expireAfterWrite=15m 
