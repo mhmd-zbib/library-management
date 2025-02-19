@@ -1,9 +1,10 @@
 FROM eclipse-temurin:21-jdk-alpine as builder
 WORKDIR /app
-COPY . .
-# Install maven
-RUN apk add --no-cache maven
-RUN mvn clean package -DskipTests
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+COPY src ./src/
+RUN ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
