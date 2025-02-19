@@ -1,34 +1,51 @@
 package dev.zbib.librarymanagement.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.MDC;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
-@Slf4j
 @Aspect
 @Component
 public class LoggingAspect {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Logger logger = LogManager.getLogger(LoggingAspect.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .enable(SerializationFeature.INDENT_OUTPUT);
 
     @Around("@annotation(loggableOperation)")
     public Object logOperation(ProceedingJoinPoint joinPoint, LoggableOperation loggableOperation) throws Throwable {
         String correlationId = UUID.randomUUID().toString();
         long startTime = System.nanoTime();
 
-        try (MDC.MDCCloseable mdc = MDC.putCloseable("correlationId", correlationId)) {
+        ThreadContext.put("correlationId", correlationId);
+        try {
+            if (loggableOperation.includeParameters()) {
+                Map<String, Object> params = getMethodParameters(joinPoint, loggableOperation.maskSensitiveData());
+                ThreadContext.put("parameters", OBJECT_MAPPER.writeValueAsString(params));
+            }
+            
             return executeWithLogging(joinPoint, loggableOperation, startTime, correlationId);
+        } finally {
+            ThreadContext.clearAll();
         }
     }
 
@@ -51,7 +68,7 @@ public class LoggingAspect {
             eventBuilder.parameters(getMethodParameters(joinPoint, loggableOperation.maskSensitiveData()));
         }
 
-        log.info("Operation started - {}", formatLogEvent(eventBuilder.build()));
+        logger.info("Operation started - {}", formatLogEvent(eventBuilder.build()));
 
         try {
             Object result = joinPoint.proceed();
@@ -61,18 +78,23 @@ public class LoggingAspect {
                     .result(loggableOperation.includeResult() ? LogMaskingUtil.maskSensitiveData(result) : null)
                     .build();
 
-            log.info("Operation completed - {}", formatLogEvent(successEvent));
-
+            logger.info("Operation completed - {}", formatLogEvent(successEvent));
             return result;
         } catch (Exception e) {
+            LogEvent.ErrorDetails errorDetails = LogEvent.ErrorDetails.builder()
+                    .type(e.getClass().getSimpleName())
+                    .message(e.getMessage())
+                    .stackTrace(getStackTraceAsString(e))
+                    .metadata(extractErrorMetadata(e))
+                    .build();
+
             LogEvent errorEvent = eventBuilder
                     .status("ERROR")
-                    .errorType(e.getClass().getSimpleName())
-                    .errorMessage(e.getMessage())
+                    .error(errorDetails)
                     .executionTime(formatExecutionTime(startTime))
                     .build();
 
-            log.error("Operation failed - {}", formatLogEvent(errorEvent), e);
+            logger.error("Operation failed - {}", formatLogEvent(errorEvent));
             throw e;
         }
     }
@@ -90,7 +112,7 @@ public class LoggingAspect {
                 );
             }
         } catch (Exception e) {
-            log.debug("Failed to get request information", e);
+            logger.debug("Failed to get request information", e);
         }
         return Collections.emptyMap();
     }
@@ -117,16 +139,18 @@ public class LoggingAspect {
             String[] paramNames = signature.getParameterNames();
             Object[] paramValues = joinPoint.getArgs();
 
-            Map<String, Object> parameters = new HashMap<>();
+            Map<String, Object> parameters = new LinkedHashMap<>();
             for (int i = 0; i < paramNames.length; i++) {
                 if (paramValues[i] != null) {
-                    parameters.put(paramNames[i],
-                            maskSensitive ? LogMaskingUtil.maskSensitiveData(paramValues[i]) : paramValues[i]);
+                    Object value = maskSensitive ? 
+                        LogMaskingUtil.maskSensitiveData(paramValues[i]) : 
+                        paramValues[i];
+                    parameters.put(paramNames[i], value);
                 }
             }
             return parameters;
         } catch (Exception e) {
-            log.debug("Failed to process method parameters", e);
+            logger.debug("Failed to process method parameters", e);
             return Collections.emptyMap();
         }
     }
@@ -135,12 +159,45 @@ public class LoggingAspect {
         try {
             return OBJECT_MAPPER.writeValueAsString(event);
         } catch (Exception e) {
-            log.warn("Failed to format log event", e);
+            logger.warn("Failed to format log event", e);
             return event.toString();
         }
     }
 
     private String formatExecutionTime(long startTimeNanos) {
         return String.format("%.2fms", (System.nanoTime() - startTimeNanos) / 1_000_000.0);
+    }
+
+    private String getStackTraceAsString(Exception e) {
+        if (e == null) return null;
+        try (StringWriter sw = new StringWriter();
+             PrintWriter pw = new PrintWriter(sw)) {
+            e.printStackTrace(pw);
+            return sw.toString();
+        } catch (IOException ex) {
+            return "Failed to capture stack trace";
+        }
+    }
+
+    private Map<String, Object> extractErrorMetadata(Exception e) {
+        Map<String, Object> metadata = new HashMap<>();
+        if (e instanceof DataIntegrityViolationException) {
+            metadata.put("constraint", extractConstraintName(e.getMessage()));
+        }
+
+        return metadata;
+    }
+
+    private String extractConstraintName(String message) {
+        if (message == null) return null;
+        int constraintIndex = message.indexOf("constraint");
+        if (constraintIndex != -1) {
+            int startQuote = message.indexOf("[", constraintIndex);
+            int endQuote = message.indexOf("]", startQuote);
+            if (startQuote != -1 && endQuote != -1) {
+                return message.substring(startQuote + 1, endQuote);
+            }
+        }
+        return null;
     }
 }

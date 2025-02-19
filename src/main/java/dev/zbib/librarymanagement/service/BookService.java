@@ -28,64 +28,96 @@ import static dev.zbib.librarymanagement.builder.BookBuilder.buildBookResponse;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private static final String BOOK_CACHE = "book-details";
+    private static final String BOOKS_LIST_CACHE = "books-list";
 
-    @CachePut(value = "books", key = "#result")
-    public UUID createBook(BookCreationRequest request) {
+    @CachePut(value = BOOK_CACHE, key = "#result.id")
+    public BookResponse createBook(BookCreationRequest request) {
         Book book = buildBook(request);
-        return bookRepository.save(book)
-                .getId();
+        Book savedBook = bookRepository.save(book);
+        return buildBookResponse(savedBook);
     }
 
-    @Cacheable(value = "books", key = "#id")
+    @Cacheable(
+            value = BOOK_CACHE,
+            key = "#id",
+            unless = "#result == null"
+    )
     public BookResponse getBookRequestById(UUID id) {
         Book book = getBookById(id);
         return buildBookResponse(book);
     }
 
-    @Cacheable(value = "books", key = "#id")
+    @Cacheable(
+            value = BOOK_CACHE,
+            key = "#id",
+            unless = "#result == null"
+    )
     public Book getBookById(UUID id) {
         return bookRepository.findById(id)
                 .orElseThrow(BookException.BookNotFound::new);
     }
 
-    @Cacheable(value = "booksByFilter", key = "T(java.lang.String).format('%s-%s-%s-%d', #filterRequest.greaterThanYear, #filterRequest.lessThanYear, #pageable.pageNumber, #pageable.pageSize)")
+    @Cacheable(
+            value = BOOKS_LIST_CACHE,
+            key = "T(java.lang.String).format('filter_%d_%d_page_%d_size_%d', " +
+                    "#filterRequest.greaterThanYear, " +
+                    "#filterRequest.lessThanYear, " +
+                    "#pageable.pageNumber, " +
+                    "#pageable.pageSize)",
+            unless = "#result.isEmpty()"
+    )
     public Page<BookResponse> getBooks(BookFilterRequest filterRequest, Pageable pageable) {
         Specification<Book> spec = Specification.where(null);
-
         if (filterRequest.getGreaterThanYear() > 0) {
             spec = spec.and(BookSpecification.withPublicationYearGreaterThan(filterRequest.getGreaterThanYear()));
         }
         if (filterRequest.getLessThanYear() > 0) {
             spec = spec.and(BookSpecification.withPublicationYearLessThan(filterRequest.getLessThanYear()));
         }
-
         Page<Book> books = bookRepository.findAll(spec,
                 pageable);
         return books.map(BookBuilder::buildBookResponse);
     }
 
-    @CachePut(value = "books", key = "#id")
-    public UUID updateBook(UUID id, BookUpdateRequest request) {
+    @CachePut(
+            value = BOOK_CACHE,
+            key = "#id",
+            condition = "#result != null"
+    )
+    public BookResponse updateBook(UUID id, BookUpdateRequest request) {
         Book existingBook = findBookById(id);
-        if (request.getTitle() != null) {
-            existingBook.setTitle(request.getTitle());
-        }
-        if (request.getAuthor() != null) {
-            existingBook.setAuthor(request.getAuthor());
-        }
-        if (request.getPublicationYear() > 0) {
-            existingBook.setPublicationYear(request.getPublicationYear());
-        }
-        if (request.getIsbn() != null) {
-            existingBook.setISBN(request.getIsbn());
-        }
-        return bookRepository.save(existingBook)
-                .getId();
+        updateBookFields(existingBook,
+                request);
+        Book updatedBook = bookRepository.save(existingBook);
+        clearBooksListCache();
+        return buildBookResponse(updatedBook);
     }
 
-    @CacheEvict(value = {"books", "booksByFilter"}, allEntries = true)
+    @CacheEvict(value = BOOK_CACHE, key = "#id")
     public void deleteBook(UUID id) {
         bookRepository.deleteById(id);
+        clearBooksListCache();
+    }
+
+    @CacheEvict(value = BOOKS_LIST_CACHE, allEntries = true)
+    public void clearBooksListCache() {
+        // Method intentionally left empty
+    }
+
+    private void updateBookFields(Book book, BookUpdateRequest request) {
+        if (request.getTitle() != null) {
+            book.setTitle(request.getTitle());
+        }
+        if (request.getAuthor() != null) {
+            book.setAuthor(request.getAuthor());
+        }
+        if (request.getPublicationYear() > 0) {
+            book.setPublicationYear(request.getPublicationYear());
+        }
+        if (request.getIsbn() != null) {
+            book.setISBN(request.getIsbn());
+        }
     }
 
     private Book findBookById(UUID id) {

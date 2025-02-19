@@ -11,9 +11,9 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "patrons", indexes = {
-    @Index(name = "idx_patron_email", columnList = "email", unique = true),
-    @Index(name = "idx_patron_name", columnList = "first_name, last_name"),
-    @Index(name = "idx_patron_membership", columnList = "membership_expiry_date")
+        @Index(name = "idx_patron_email", columnList = "email"),
+        @Index(name = "idx_patron_name", columnList = "first_name, last_name"),
+        @Index(name = "idx_patron_membership", columnList = "membership_expiry_date")
 })
 @Getter
 @Setter
@@ -32,7 +32,7 @@ public class Patron {
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
 
     @Column(name = "phone_number", length = 20)

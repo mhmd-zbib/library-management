@@ -29,9 +29,8 @@ public class BookController {
             includeResult = true
     )
     @PostMapping
-    public ResponseEntity<UUID> createBook(@Valid @RequestBody BookCreationRequest request) {
-        UUID id = bookService.createBook(request);
-        return ResponseEntity.ok(id);
+    public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookCreationRequest request) {
+        return ResponseEntity.ok(bookService.createBook(request));
     }
 
     @GetMapping("/{id}")
@@ -51,10 +50,9 @@ public class BookController {
             includeResult = true
     )
     @PutMapping("/{id}")
-    public ResponseEntity<UUID> updateBook(@PathVariable UUID id, @Valid @RequestBody BookUpdateRequest request) {
-        UUID bookId = bookService.updateBook(id,
-                request);
-        return ResponseEntity.ok(bookId);
+    public ResponseEntity<BookResponse> updateBook(@PathVariable UUID id, @Valid @RequestBody BookUpdateRequest request) {
+        return ResponseEntity.ok(bookService.updateBook(id,
+                request));
     }
 
     @LoggableOperation(

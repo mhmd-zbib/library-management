@@ -1,102 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN" monitorInterval="30">
+<Configuration status="WARN">
     <Properties>
-        <!-- JSON Layout Properties -->
         <Property name="APP_LOG_ROOT">/var/log/library-management</Property>
-        <Property name="ARCHIVE_ROOT">${APP_LOG_ROOT}/archive</Property>
-        <Property name="MAX_FILE_SIZE">100MB</Property>
-        <Property name="MAX_FILES">100</Property>
-        <Property name="LOG_PREFIX">library-management</Property>
-        
-        <!-- ANSI Colors -->
-        <Property name="CONSOLE_LOG_PATTERN">%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{bright,white} %highlight{%-5level}{FATAL=bright red, ERROR=red, WARN=yellow, INFO=green, DEBUG=bright blue, TRACE=cyan} %style{[%t]}{bright,blue} %style{%c{1.}}{bright,yellow}: %msg%n%throwable</Property>
-        <Property name="serviceName">library-management</Property>
-        <Property name="serviceVersion">${sys:service.version}</Property>
-        <Property name="environment">${sys:ENV:-dev}</Property>
-        <Property name="LOG_PATTERN_JSON">{"timestamp":"%d{ISO8601}","level":"%level","thread":"%t","logger":"%logger","message":"%message","correlationId":"%X{correlationId}","user":"%X{user}","requestId":"%X{requestId}","service":"library-management","environment":"${sys:ENV:-dev}"}%n%throwable</Property>
-        <Property name="LOG_PATTERN_CONSOLE">%highlight{%d{HH:mm:ss.SSS} [%t] %level %logger{36} correlationId=%X{correlationId} - %msg%n}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue, TRACE=white}</Property>
+        <Property name="LOG_PATTERN_CONSOLE">%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} correlationId=%X{correlationId} - %msg%n}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue, TRACE=white}</Property>
     </Properties>
 
     <Appenders>
-        <!-- Console Appender with Highlighting -->
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="${LOG_PATTERN_CONSOLE}" />
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN_CONSOLE}"/>
         </Console>
 
-        <!-- Enhanced Rolling File Appender -->
-        <RollingFile name="JsonFile"
+        <RollingFile name="JsonFileAppender"
                      fileName="${APP_LOG_ROOT}/application.json"
                      filePattern="${APP_LOG_ROOT}/application-%d{yyyy-MM-dd}-%i.json.gz">
-            <PatternLayout pattern="${LOG_PATTERN_JSON}" />
+            <JsonLayout complete="false" compact="true" eventEol="true" includeTimeMillis="true" stacktraceAsString="true">
+                <KeyValuePair key="timestamp" value="$${date:yyyy-MM-dd'T'HH:mm:ss.SSSZ}"/>
+                <KeyValuePair key="correlationId" value="$${ctx:correlationId}"/>
+                <KeyValuePair key="service" value="${sys:spring.application.name:-library-management}"/>
+                <KeyValuePair key="environment" value="${sys:ENV:-local}"/>
+                <KeyValuePair key="message" value="$${message}"/>
+                <KeyValuePair key="level" value="$${level}"/>
+                <KeyValuePair key="logger" value="$${logger}"/>
+                <KeyValuePair key="thread" value="$${thread}"/>
+            </JsonLayout>
             <Policies>
-                <TimeBasedTriggeringPolicy interval="1" />
-                <SizeBasedTriggeringPolicy size="100 MB" />
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="30">
-                <Delete basePath="${APP_LOG_ROOT}" maxDepth="2">
-                    <IfFileName glob="*/application-*.json.gz" />
-                    <IfLastModified age="30d" />
-                </Delete>
-            </DefaultRolloverStrategy>
+            <DefaultRolloverStrategy max="30"/>
         </RollingFile>
 
-        <!-- Async Appender with Discard Policy -->
-        <Async name="AsyncJson" bufferSize="1000">
-            <AppenderRef ref="JsonFile" />
-            <LinkedTransferQueue />
+        <RollingFile name="ErrorFileAppender"
+                     fileName="${APP_LOG_ROOT}/error.json"
+                     filePattern="${APP_LOG_ROOT}/error-%d{yyyy-MM-dd}-%i.json.gz">
+            <JsonLayout complete="false" compact="true" eventEol="true" includeTimeMillis="true" stacktraceAsString="true">
+                <KeyValuePair key="timestamp" value="$${date:yyyy-MM-dd'T'HH:mm:ss.SSSZ}"/>
+                <KeyValuePair key="correlationId" value="$${ctx:correlationId}"/>
+                <KeyValuePair key="service" value="${sys:spring.application.name:-library-management}"/>
+                <KeyValuePair key="environment" value="${sys:ENV:-local}"/>
+                <KeyValuePair key="message" value="$${message}"/>
+                <KeyValuePair key="level" value="$${level}"/>
+                <KeyValuePair key="logger" value="$${logger}"/>
+                <KeyValuePair key="thread" value="$${thread}"/>
+                <KeyValuePair key="stackTrace" value="$${exception:format=JSON}"/>
+            </JsonLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <Async name="AsyncJsonAppender" bufferSize="1000">
+            <AppenderRef ref="JsonFileAppender"/>
         </Async>
     </Appenders>
 
     <Loggers>
-        <!-- Root Logger -->
-        <Root level="INFO">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="AsyncJson"/>
-        </Root>
-
         <!-- Application Loggers -->
-        <Logger name="dev.zbib.librarymanagement" level="DEBUG" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="AsyncJson"/>
+        <Logger name="dev.zbib.librarymanagement" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncJsonAppender"/>
         </Logger>
 
         <!-- Framework Loggers -->
-        <Logger name="org.springframework" level="WARN" additivity="false">
-            <AppenderRef ref="AsyncJson"/>
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Logger name="org.hibernate" level="WARN" additivity="false">
-            <AppenderRef ref="AsyncJson"/>
-            <AppenderRef ref="Console"/>
-        </Logger>
-
-        <!-- Security Logger -->
-        <Logger name="org.springframework.security" level="WARN" additivity="false">
-            <AppenderRef ref="AsyncJson"/>
-            <AppenderRef ref="Console"/>
+        <Logger name="org.springframework" level="ERROR"/>
+        <Logger name="org.hibernate" level="ERROR"/>
+        <Logger name="org.apache" level="ERROR"/>
+        <Logger name="org.springframework.security" level="ERROR"/>
+        
+        <!-- Error Logging -->
+        <Logger name="error-logger" level="ERROR" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="ErrorFileAppender"/>
         </Logger>
 
-        <!-- GC Logging -->
-        <Logger name="jdk.GarbageCollector" level="INFO" additivity="false">
-            <AppenderRef ref="AsyncJson"/>
-            <AppenderRef ref="Console"/>
-        </Logger>
-
-        <!-- Add these logger configurations -->
-        <Logger name="org.hibernate.SQL" level="WARN" additivity="false">
-            <AppenderRef ref="AsyncJson"/>
-            <AppenderRef ref="Console"/>
-            <Filters>
-                <RegexFilter regex=".*Hibernate:.*" onMatch="DENY" onMismatch="NEUTRAL"/>
-            </Filters>
-        </Logger>
-
-        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-            <AppenderRef ref="AsyncJson"/>
-            <AppenderRef ref="Console"/>
-            <Filters>
-                <ThresholdFilter level="INFO" onMatch="DENY" onMismatch="NEUTRAL"/>
-            </Filters>
-        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncJsonAppender"/>
+        </Root>
     </Loggers>
 </Configuration>

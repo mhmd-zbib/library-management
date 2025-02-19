@@ -4,12 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LogMaskingUtil {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Logger logger = LogManager.getLogger(LogMaskingUtil.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
     private static final String MASK = "********";
 
     private static final Set<String> SENSITIVE_FIELDS = Set.of("password",

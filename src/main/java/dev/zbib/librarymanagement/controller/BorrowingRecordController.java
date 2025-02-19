@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/borrowing-records")
 public class BorrowingRecordController {
 
     private final BorrowingRecordService borrowingRecordService;
@@ -47,7 +46,7 @@ public class BorrowingRecordController {
         return ResponseEntity.ok("Record added");
     }
 
-    @GetMapping
+    @GetMapping("/borrow")
     public ResponseEntity<Page<BorrowingRecord>> getBorrowingRecords(
             @Valid @ModelAttribute BorrowingRecordFilter filter,
             Pageable pageable) {
