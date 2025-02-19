@@ -1,0 +1,101 @@
+{
+	"info": {
+		"_postman_id": "f7bc8d54-c249-4731-a3fa-87b1f6779f4a",
+		"name": "Patron",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "33990347"
+	},
+	"item": [
+		{
+			"name": "create patron",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"firstName\": \"Mohammad\",\r\n  \"lastName\": \"Zbib\",\r\n  \"email\": \"mhmdzbib@example.com\",\r\n  \"phoneNumber\": \"+961123456789\",\r\n  \"address\": \"123 Library Street, Beirut, Lebanon\",\r\n  \"membershipExpiryDate\": \"2026-02-18T20:37:59\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/patrons"
+			},
+			"response": []
+		},
+		{
+			"name": "get patron by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{url}}/patrons/{{bookId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "get all patrons",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{url}}/patrons"
+			},
+			"response": []
+		},
+		{
+			"name": "update patrons",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"mohammad@gmail.com\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/patrons/{{patronId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "delete patron",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "{{url}}/patrons/{{patronId}}"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "{{token}}"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

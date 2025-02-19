@@ -1,0 +1,74 @@
+{
+	"info": {
+		"_postman_id": "4f48176e-ca08-47a7-a1f9-d3317f5b736e",
+		"name": "Borrowing Record",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "33990347"
+	},
+	"item": [
+		{
+			"name": "borrow book",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"borrowDate\": \"2025-02-18T22:32:09\",\r\n  \"dueDate\": \"2025-03-18T22:32:09\",\r\n  \"returnDate\": \"2025-02-18T22:32:09\",\r\n  \"status\": \"RETURNED\",\r\n  \"notes\": \"Book returned in good condition\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/borrow/{{bookId}}/patrons/{{patronId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "return book",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": "{{url}}/return/{{bookId}}/patrons/{{patronId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "get borrowings",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{url}}/borrow"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "{{token}}"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

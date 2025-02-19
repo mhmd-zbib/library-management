@@ -1,0 +1,115 @@
+{
+	"info": {
+		"_postman_id": "75245de9-3480-4afa-9fa0-909977ea53d9",
+		"name": "Books",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "33990347"
+	},
+	"item": [
+		{
+			"name": "create book",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Clean Code: A Handbook of Agile Software Craftsmanship\",\r\n    \"author\": \"Robert C. Martin\",\r\n    \"publicationYear\": \"2008\",\r\n    \"isbn\": \"9780132350884\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/books"
+			},
+			"response": []
+		},
+		{
+			"name": "get book by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{url}}/books/{{bookId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "get all books",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/books?fromYear=2003",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"books"
+					],
+					"query": [
+						{
+							"key": "fromYear",
+							"value": "2003"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update book",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Clean Code: A Handbook of Agile Software Craftsmanship\",\r\n    \"author\": \"Robert C. Martin\",\r\n    \"publicationYear\": \"2008\",\r\n    \"isbn\": \"9780132350884\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{url}}/books/{{bookId}}"
+			},
+			"response": []
+		},
+		{
+			"name": "delete book",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "{{url}}/books/{{bookId}}"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "{{token}}"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
