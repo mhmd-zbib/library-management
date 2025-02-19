@@ -112,8 +112,9 @@ public class BookService {
         if (request.getAuthor() != null) {
             book.setAuthor(request.getAuthor());
         }
-        if (request.getPublicationYear() > 0) {
-            book.setPublicationYear(request.getPublicationYear());
+        Integer publicationYear = request.getPublicationYear();
+        if (publicationYear != null && publicationYear > 0) {
+            book.setPublicationYear(publicationYear);
         }
         if (request.getIsbn() != null) {
             book.setISBN(request.getIsbn());

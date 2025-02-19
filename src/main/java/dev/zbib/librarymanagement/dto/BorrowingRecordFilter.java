@@ -1,6 +1,7 @@
 package dev.zbib.librarymanagement.dto;
 
 import dev.zbib.librarymanagement.entity.BorrowingStatus;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -8,14 +9,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
+@Builder
 public class BorrowingRecordFilter {
-    private BorrowingStatus status;
-    private UUID bookId;
     private UUID patronId;
-    
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime startDate;
-    
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime endDate;
+    private UUID bookId;
+    private BorrowingStatus status;
+    private LocalDateTime fromDate;
+    private LocalDateTime toDate;
+    private Boolean isOverdue;
 } 

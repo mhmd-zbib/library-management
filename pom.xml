@@ -30,6 +30,7 @@
         <java.version>21</java.version>
         <log4j2.version>2.20.0</log4j2.version>
         <jackson.version>2.15.3</jackson.version>
+        <mockito.version>5.14.2</mockito.version>
     </properties>
     <dependencies>
         <dependency>
@@ -148,6 +149,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -198,6 +211,9 @@
                     <systemPropertyVariables>
                         <service.version>${project.version}</service.version>
                     </systemPropertyVariables>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>

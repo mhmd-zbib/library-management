@@ -1,13 +1,15 @@
 package dev.zbib.librarymanagement.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PatronUpdateRequest {
 
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
