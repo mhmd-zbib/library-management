@@ -117,8 +117,8 @@ class BookServiceTest {
     void getBooks_ShouldReturnPageOfBookResponses() {
         Pageable pageable = PageRequest.of(0, 10);
         BookFilterRequest filterRequest = BookFilterRequest.builder()
-                .greaterThanYear(2000)
-                .lessThanYear(2025)
+                .fromYear(2000)
+                .toYear(2025)
                 .build();
         Page<Book> bookPage = new PageImpl<>(List.of(testBook));
 

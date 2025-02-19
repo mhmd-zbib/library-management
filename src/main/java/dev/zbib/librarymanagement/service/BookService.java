@@ -61,19 +61,19 @@ public class BookService {
     @Cacheable(
             value = BOOKS_LIST_CACHE,
             key = "T(java.lang.String).format('filter_%d_%d_page_%d_size_%d', " +
-                    "#filterRequest.greaterThanYear, " +
-                    "#filterRequest.lessThanYear, " +
+                    "#filterRequest.fromYear, " +
+                    "#filterRequest.toYear, " +
                     "#pageable.pageNumber, " +
                     "#pageable.pageSize)",
             unless = "#result.isEmpty()"
     )
     public Page<BookResponse> getBooks(BookFilterRequest filterRequest, Pageable pageable) {
         Specification<Book> spec = Specification.where(null);
-        if (filterRequest.getGreaterThanYear() > 0) {
-            spec = spec.and(BookSpecification.withPublicationYearGreaterThan(filterRequest.getGreaterThanYear()));
+        if (filterRequest.getFromYear() > 0) {
+            spec = spec.and(BookSpecification.withPublicationYearGreaterThan(filterRequest.getFromYear()));
         }
-        if (filterRequest.getLessThanYear() > 0) {
-            spec = spec.and(BookSpecification.withPublicationYearLessThan(filterRequest.getLessThanYear()));
+        if (filterRequest.getToYear() > 0) {
+            spec = spec.and(BookSpecification.withPublicationYearLessThan(filterRequest.getToYear()));
         }
         Page<Book> books = bookRepository.findAll(spec,
                 pageable);
