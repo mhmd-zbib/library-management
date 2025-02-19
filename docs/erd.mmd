@@ -1,0 +1,39 @@
+erDiagram
+    User {
+        UUID id PK
+        String email UK
+        String password
+    }
+
+    Book {
+        UUID id PK
+        String title
+        String author
+        int publicationYear
+        String ISBN UK
+    }
+
+    Patron {
+        UUID id PK
+        String firstName
+        String lastName
+        String email
+        String phoneNumber
+        String address
+        DateTime membershipExpiryDate
+    }
+
+    BorrowingRecord {
+        UUID id PK
+        UUID bookId FK
+        UUID patronId FK
+        DateTime borrowDate
+        DateTime returnDate
+        DateTime dueDate
+        String status
+        String notes
+        boolean isOverdue
+    }
+
+    Book ||--o{ BorrowingRecord : "has"
+    Patron ||--o{ BorrowingRecord : "has" 

@@ -1,10 +1,12 @@
 FROM eclipse-temurin:21-jdk-alpine as builder
 WORKDIR /app
 COPY . .
-RUN ./gradlew clean bootJar
+# Install maven
+RUN apk add --no-cache maven
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=builder /app/build/libs/*.jar app.jar
-EXPOSE 8080
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE 9000
 ENTRYPOINT ["java", "-jar", "app.jar"] 

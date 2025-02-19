@@ -1,0 +1,27 @@
+graph TD
+    Client[Client] --> API[API Layer]
+    
+    subgraph Application
+        API --> Security[Security Layer]
+        Security --> Controllers[Controllers]
+        Controllers --> Services[Service Layer]
+        Services --> Repositories[Repository Layer]
+        
+        Services --> Cache[Cache]
+        Services --> Validation[Validation]
+        
+        AOP[AOP Logging] --> Services
+        ExceptionHandler[Exception Handler] --> Controllers
+    end
+    
+    subgraph Infrastructure
+        Repositories --> Database[(PostgreSQL)]
+        Cache --> Redis[(Redis)]
+    end
+    
+    subgraph Cross-Cutting
+        Logging[Logging]
+        Security
+        ExceptionHandler
+        AOP
+    end 
